@@ -101,4 +101,18 @@ class User extends \yii\base\BaseObject implements \yii\web\IdentityInterface
     {
         return $this->password === $password;
     }
+
+    public static function findUser($username, $getUsername = false)
+    {
+        $user = self::find()->andWhere(['username' => $username])->one();
+        if ($user) {
+            if ($getUsername) {
+                return $user;
+            } else {
+                return $user->username;
+            }
+        }
+
+        return null;
+    }
 }
