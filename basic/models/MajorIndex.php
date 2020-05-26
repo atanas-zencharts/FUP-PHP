@@ -9,9 +9,14 @@ use Yii;
  *
  * @property int $id
  * @property string $name
- * @property string $ticker
+ * @property string $symbol
  * @property float $price
  * @property float $change
+ * @property float|null $dayLow
+ * @property float|null $dayHigh
+ * @property float|null $open
+ * @property float|null $previousDay
+ * @property float|null $changePercent
  */
 class MajorIndex extends \yii\db\ActiveRecord
 {
@@ -29,9 +34,9 @@ class MajorIndex extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['name', 'ticker', 'price', 'change'], 'required'],
-            [['price', 'change'], 'number'],
-            [['name', 'ticker'], 'string', 'max' => 255],
+            [['name', 'symbol', 'price', 'change'], 'required'],
+            [['price', 'change', 'dayLow', 'dayHigh', 'open', 'previousDay', 'changePercent'], 'number'],
+            [['name', 'symbol'], 'string', 'max' => 255],
         ];
     }
 
@@ -43,9 +48,14 @@ class MajorIndex extends \yii\db\ActiveRecord
         return [
             'id' => 'ID',
             'name' => 'Name',
-            'ticker' => 'Ticker',
+            'symbol' => 'Symbol',
             'price' => 'Price',
             'change' => 'Change',
+            'dayLow' => 'Day Low',
+            'dayHigh' => 'Day High',
+            'open' => 'Open',
+            'previousDay' => 'Previous Day',
+            'changePercent' => 'Change Percent',
         ];
     }
 

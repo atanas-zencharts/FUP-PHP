@@ -4,6 +4,7 @@ namespace app\controllers;
 
 use Yii;
 use yii\filters\AccessControl;
+use yii\httpclient\Client;
 use yii\web\Controller;
 use yii\web\Response;
 use yii\filters\VerbFilter;
@@ -123,6 +124,8 @@ class SiteController extends Controller
      */
     public function actionAbout()
     {
+        $client = new Client();
+//        file_get_contents($url)
         return $this->render('about');
     }
 }

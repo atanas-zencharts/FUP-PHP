@@ -11,7 +11,7 @@ use Yii;
  * @property string $name
  * @property string $symbol
  * @property float $price
- * @property string $beta
+ * @property float $beta
  * @property int $volAvg
  * @property int $mktCap
  * @property float|null $lastDiv
@@ -25,6 +25,10 @@ use Yii;
  * @property string|null $description
  * @property string|null $website
  * @property string|null $image
+ * @property float|null $dayLow
+ * @property float|null $dayHigh
+ * @property float|null $open
+ * @property float|null $previousDay
  *
  * @property Exchange $exchage
  * @property Industry $industry
@@ -48,12 +52,11 @@ class Company extends \yii\db\ActiveRecord
     {
         return [
             [['name', 'symbol', 'price', 'beta', 'volAvg', 'mktCap'], 'required'],
-            [['price', 'lastDiv', 'changes', 'changePercentage'], 'number'],
+            [['price', 'beta', 'lastDiv', 'changes', 'changePercentage', 'dayLow', 'dayHigh', 'open', 'previousDay'], 'number'],
             [['volAvg', 'mktCap', 'exchage_id', 'industry_id', 'sector_id'], 'integer'],
             [['description'], 'string'],
             [['name'], 'string', 'max' => 500],
             [['symbol', 'range'], 'string', 'max' => 255],
-            [['beta'], 'string', 'max' => 45],
             [['ceo'], 'string', 'max' => 505],
             [['website', 'image'], 'string', 'max' => 2000],
             [['exchage_id'], 'exist', 'skipOnError' => true, 'targetClass' => Exchange::className(), 'targetAttribute' => ['exchage_id' => 'id']],
@@ -86,6 +89,10 @@ class Company extends \yii\db\ActiveRecord
             'description' => 'Description',
             'website' => 'Website',
             'image' => 'Image',
+            'dayLow' => 'Day Low',
+            'dayHigh' => 'Day High',
+            'open' => 'Open',
+            'previousDay' => 'Previous Day',
         ];
     }
 

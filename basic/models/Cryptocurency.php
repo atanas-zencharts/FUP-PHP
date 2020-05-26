@@ -12,6 +12,11 @@ use Yii;
  * @property float $price
  * @property float $change
  * @property int $capitalization
+ * @property string|null $symbol
+ * @property float|null $dayLow
+ * @property float|null $dayHigh
+ * @property float|null $open
+ * @property float|null $previousDay
  *
  * @property OrderCrypto[] $orderCryptos
  */
@@ -32,9 +37,10 @@ class Cryptocurency extends \yii\db\ActiveRecord
     {
         return [
             [['name', 'price', 'change', 'capitalization'], 'required'],
-            [['price', 'change'], 'number'],
+            [['price', 'change', 'dayLow', 'dayHigh', 'open', 'previousDay'], 'number'],
             [['capitalization'], 'integer'],
             [['name'], 'string', 'max' => 255],
+            [['symbol'], 'string', 'max' => 50],
         ];
     }
 
@@ -49,6 +55,11 @@ class Cryptocurency extends \yii\db\ActiveRecord
             'price' => 'Price',
             'change' => 'Change',
             'capitalization' => 'Capitalization',
+            'symbol' => 'Symbol',
+            'dayLow' => 'Day Low',
+            'dayHigh' => 'Day High',
+            'open' => 'Open',
+            'previousDay' => 'Previous Day',
         ];
     }
 
