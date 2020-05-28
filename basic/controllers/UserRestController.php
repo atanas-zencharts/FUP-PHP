@@ -11,6 +11,7 @@ namespace app\controllers;
 use app\models\User;
 use Yii;
 use yii\rest\Controller;
+use yii\helpers\VarDumper;
 
 class UserRestController extends Controller
 {
@@ -18,11 +19,16 @@ class UserRestController extends Controller
     public function actionRegister()
     {
         $getRequest = Yii::$app->request->get();
-        if ($getRequest && User::findByUsername($getRequest['username']) == null) {
+
+        if ($getRequest && !User::find()->andWhere(['username' => $getRequest['username']])->exists()) {
             $user = new User();
 
             if ($user->load($getRequest, '') && $user->save()) {
                 return $this->asJson(['success' => true]);
+            } else {
+                Yii::error(VarDumper::dumpAsString([
+                    $user->getErrors()
+                 ]));
             }
         }
 
@@ -32,8 +38,10 @@ class UserRestController extends Controller
     public function actionLogin()
     {
         $getRequest = Yii::$app->request->get();
+
         if ($getRequest) {
-            $user = User::findUser($getRequest['username'], true);
+            $user = User::find()->andWhere(['username' => $getRequest['username']])->one();
+
             if ($user->password === $getRequest['password']) {
                 return $this->asJson([
                     'success' => true,

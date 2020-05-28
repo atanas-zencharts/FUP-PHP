@@ -2,117 +2,121 @@
 
 namespace app\models;
 
-class User extends \yii\base\BaseObject implements \yii\web\IdentityInterface
+use Yii;
+
+/**
+ * This is the model class for table "user".
+ *
+ * @property int $id
+ * @property string $username
+ * @property string $first_name
+ * @property string $last_name
+ * @property string|null $date_of_birth
+ * @property string|null $city
+ * @property string|null $post_code
+ * @property string|null $address
+ * @property int|null $disabled
+ * @property float|null $wallet
+ * @property string|null $password
+ *
+ * @property OrderCrypto[] $orderCryptos
+ * @property OrderForex[] $orderForexes
+ * @property OrderShare[] $orderShares
+ * @property WalletHistory[] $walletHistories
+ */
+class User extends \yii\db\ActiveRecord
 {
-    public $id;
-    public $username;
-    public $password;
-    public $authKey;
-    public $accessToken;
-
-    private static $users = [
-        '100' => [
-            'id' => '100',
-            'username' => 'admin',
-            'password' => 'admin',
-            'authKey' => 'test100key',
-            'accessToken' => '100-token',
-        ],
-        '101' => [
-            'id' => '101',
-            'username' => 'demo',
-            'password' => 'demo',
-            'authKey' => 'test101key',
-            'accessToken' => '101-token',
-        ],
-    ];
-
-
     /**
      * {@inheritdoc}
      */
-    public static function findIdentity($id)
+    public static function tableName()
     {
-        return isset(self::$users[$id]) ? new static(self::$users[$id]) : null;
+        return 'user';
     }
 
     /**
      * {@inheritdoc}
      */
-    public static function findIdentityByAccessToken($token, $type = null)
+    public function rules()
     {
-        foreach (self::$users as $user) {
-            if ($user['accessToken'] === $token) {
-                return new static($user);
-            }
-        }
-
-        return null;
+        return [
+            [['username', 'first_name', 'last_name'], 'required'],
+            [['date_of_birth'], 'safe'],
+            [['disabled'], 'integer'],
+            [['wallet'], 'number'],
+            [['username'], 'string', 'max' => 500],
+            [['first_name', 'last_name', 'city', 'post_code'], 'string', 'max' => 255],
+            [['address', 'password'], 'string', 'max' => 1000],
+            [['username'], 'unique'],
+        ];
     }
 
     /**
-     * Finds user by username
+     * {@inheritdoc}
+     */
+    public function attributeLabels()
+    {
+        return [
+            'id' => 'ID',
+            'username' => 'Username',
+            'first_name' => 'First Name',
+            'last_name' => 'Last Name',
+            'date_of_birth' => 'Date Of Birth',
+            'city' => 'City',
+            'post_code' => 'Post Code',
+            'address' => 'Address',
+            'disabled' => 'Disabled',
+            'wallet' => 'Wallet',
+            'password' => 'Password',
+        ];
+    }
+
+    /**
+     * Gets query for [[OrderCryptos]].
      *
-     * @param string $username
-     * @return static|null
+     * @return \yii\db\ActiveQuery|\app\query\OrderCryptoQuery
      */
-    public static function findByUsername($username)
+    public function getOrderCryptos()
     {
-        foreach (self::$users as $user) {
-            if (strcasecmp($user['username'], $username) === 0) {
-                return new static($user);
-            }
-        }
-
-        return null;
+        return $this->hasMany(OrderCrypto::className(), ['user_id' => 'id']);
     }
 
     /**
-     * {@inheritdoc}
-     */
-    public function getId()
-    {
-        return $this->id;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getAuthKey()
-    {
-        return $this->authKey;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function validateAuthKey($authKey)
-    {
-        return $this->authKey === $authKey;
-    }
-
-    /**
-     * Validates password
+     * Gets query for [[OrderForexes]].
      *
-     * @param string $password password to validate
-     * @return bool if password provided is valid for current user
+     * @return \yii\db\ActiveQuery|\app\query\OrderForexQuery
      */
-    public function validatePassword($password)
+    public function getOrderForexes()
     {
-        return $this->password === $password;
+        return $this->hasMany(OrderForex::className(), ['user_id' => 'id']);
     }
 
-    public static function findUser($username, $getUsername = false)
+    /**
+     * Gets query for [[OrderShares]].
+     *
+     * @return \yii\db\ActiveQuery|\app\query\OrderShareQuery
+     */
+    public function getOrderShares()
     {
-        $user = self::find()->andWhere(['username' => $username])->one();
-        if ($user) {
-            if ($getUsername) {
-                return $user;
-            } else {
-                return $user->username;
-            }
-        }
+        return $this->hasMany(OrderShare::className(), ['user_id' => 'id']);
+    }
 
-        return null;
+    /**
+     * Gets query for [[WalletHistories]].
+     *
+     * @return \yii\db\ActiveQuery|\app\query\WalletHistoryQuery
+     */
+    public function getWalletHistories()
+    {
+        return $this->hasMany(WalletHistory::className(), ['user_id' => 'id']);
+    }
+
+    /**
+     * {@inheritdoc}
+     * @return \app\query\UserQuery the active query used by this AR class.
+     */
+    public static function find()
+    {
+        return new \app\query\UserQuery(get_called_class());
     }
 }
