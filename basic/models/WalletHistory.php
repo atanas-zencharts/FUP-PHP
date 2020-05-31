@@ -12,6 +12,8 @@ use Yii;
  * @property int $history_type_id
  * @property float $amount
  * @property string|null $date
+ * @property float|null $amount_before
+ * @property float|null $amount_after
  *
  * @property WalletHistoryTypes $historyType
  * @property User $user
@@ -34,7 +36,7 @@ class WalletHistory extends \yii\db\ActiveRecord
         return [
             [['user_id', 'history_type_id', 'amount'], 'required'],
             [['user_id', 'history_type_id'], 'integer'],
-            [['amount'], 'number'],
+            [['amount', 'amount_before', 'amount_after'], 'number'],
             [['date'], 'safe'],
             [['history_type_id'], 'exist', 'skipOnError' => true, 'targetClass' => WalletHistoryTypes::className(), 'targetAttribute' => ['history_type_id' => 'id']],
             [['user_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['user_id' => 'id']],
@@ -52,6 +54,8 @@ class WalletHistory extends \yii\db\ActiveRecord
             'history_type_id' => 'History Type ID',
             'amount' => 'Amount',
             'date' => 'Date',
+            'amount_before' => 'Amount Before',
+            'amount_after' => 'Amount After',
         ];
     }
 

@@ -10,6 +10,7 @@ namespace app\controllers;
 
 use app\models\User;
 use app\models\WalletHistory;
+use app\models\WalletHistoryTypesBL;
 use Yii;
 use yii\rest\Controller;
 use yii\helpers\VarDumper;
@@ -64,5 +65,43 @@ class UserRestController extends Controller
          ]));
         $walletHistory = WalletHistory::find()->andWhere(['user_id' => $id])->orderBy('date DESC')->asArray()->all();
         return $this->asJson($walletHistory);
+    }
+
+    public function actionGetUserCurrentAmount($id)
+    {
+        $user = User::findOne($id);
+        return $user->wallet;
+    }
+
+    public function actionUserWalletOperation($id, $amount, $operationType)
+    {
+        $user = User::find()->andWhere(['id' => $id])->one();
+        if (!$user) {
+            return null;
+        }
+        $history = new WalletHistory();
+        $history->amount_before = $user->wallet;
+
+        $sum = null;
+        if ($operationType == WalletHistoryTypesBL::TYPE_ADD) {
+            $sum = $user->wallet + $amount;
+        } elseif ($operationType == WalletHistoryTypesBL::TYPE_WITHDRAWAL) {
+            $sum = $user->wallet - $amount;
+        }
+
+        if ($sum && $user->updateAttributes(['wallet' => $sum])) {
+            $history->date = (new \DateTime())->format(DATE_W3C);
+            $history->amount = $amount;
+            $history->amount_after = $sum;
+            $history->history_type_id = $operationType;
+            $history->user_id = $user->id;
+
+            if ($history->save()) {
+                Yii::error(VarDumper::dumpAsString([
+                     $history->getErrors()
+                 ]));
+            }
+        }
+        return $user->wallet;
     }
 }
