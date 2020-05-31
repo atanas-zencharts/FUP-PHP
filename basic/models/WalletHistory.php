@@ -9,9 +9,11 @@ use Yii;
  *
  * @property int $id
  * @property int $user_id
- * @property int $action_type
+ * @property int $history_type_id
  * @property float $amount
+ * @property string|null $date
  *
+ * @property WalletHistoryTypes $historyType
  * @property User $user
  */
 class WalletHistory extends \yii\db\ActiveRecord
@@ -30,9 +32,11 @@ class WalletHistory extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['user_id', 'action_type', 'amount'], 'required'],
-            [['user_id', 'action_type'], 'integer'],
+            [['user_id', 'history_type_id', 'amount'], 'required'],
+            [['user_id', 'history_type_id'], 'integer'],
             [['amount'], 'number'],
+            [['date'], 'safe'],
+            [['history_type_id'], 'exist', 'skipOnError' => true, 'targetClass' => WalletHistoryTypes::className(), 'targetAttribute' => ['history_type_id' => 'id']],
             [['user_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['user_id' => 'id']],
         ];
     }
@@ -45,9 +49,20 @@ class WalletHistory extends \yii\db\ActiveRecord
         return [
             'id' => 'ID',
             'user_id' => 'User ID',
-            'action_type' => 'Action Type',
+            'history_type_id' => 'History Type ID',
             'amount' => 'Amount',
+            'date' => 'Date',
         ];
+    }
+
+    /**
+     * Gets query for [[HistoryType]].
+     *
+     * @return \yii\db\ActiveQuery|\app\query\WalletHistoryTypesQuery
+     */
+    public function getHistoryType()
+    {
+        return $this->hasOne(WalletHistoryTypes::className(), ['id' => 'history_type_id']);
     }
 
     /**

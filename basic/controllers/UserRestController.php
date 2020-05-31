@@ -9,6 +9,7 @@
 namespace app\controllers;
 
 use app\models\User;
+use app\models\WalletHistory;
 use Yii;
 use yii\rest\Controller;
 use yii\helpers\VarDumper;
@@ -53,5 +54,15 @@ class UserRestController extends Controller
         return $this->asJson([
             'message' => 'Unsuccessful Login'
         ]);
+    }
+
+    public function actionGetUserWalletHistory($id)
+    {
+
+        Yii::error(VarDumper::dumpAsString([
+             '$id' => $id
+         ]));
+        $walletHistory = WalletHistory::find()->andWhere(['user_id' => $id])->orderBy('date DESC')->asArray()->all();
+        return $this->asJson($walletHistory);
     }
 }
