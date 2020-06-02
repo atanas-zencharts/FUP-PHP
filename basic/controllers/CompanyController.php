@@ -3,6 +3,7 @@
 
 namespace app\controllers;
 
+use app\components\AutoBuyerHelper;
 use Yii;
 use yii\helpers\VarDumper;
 use app\models\Company;
@@ -24,7 +25,7 @@ class CompanyController extends Controller
             $order = new OrderShare();
             $order->company_id = $id;
             $order->user_id = $userId;
-            $order->type = 2;
+            $order->type = 1;
             $order->status_id = 1;
         }
 
@@ -38,9 +39,16 @@ class CompanyController extends Controller
             Yii::error(VarDumper::dumpAsString([
                    $order->getErrors()
              ]));
-            return false;
+            return $this->asJson(['message' => 'The order could not be saved. Please contact support', 'error' => true]);
         } else {
-            return true;
+            $autoBuy = new AutoBuyerHelper($order);
+            $result = $autoBuy->autoBuy();
+
+            Yii::error(VarDumper::dumpAsString([
+                 'result' => $result
+             ]));
+
+            return $this->asJson(['boughtQuantity' => $autoBuy->boughtQuantity, 'totalPrice' => $autoBuy->totalPrice, 'message' => $autoBuy->message, 'error' => false]);
         }
     }
 

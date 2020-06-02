@@ -33,6 +33,7 @@ use Yii;
  * @property Exchange $exchage
  * @property Industry $industry
  * @property Sector $sector
+ * @property CompanyPriceHistory[] $companyPriceHistories
  * @property OrderShare[] $orderShares
  */
 class Company extends \yii\db\ActiveRecord
@@ -124,6 +125,16 @@ class Company extends \yii\db\ActiveRecord
     public function getSector()
     {
         return $this->hasOne(Sector::className(), ['id' => 'sector_id']);
+    }
+
+    /**
+     * Gets query for [[CompanyPriceHistories]].
+     *
+     * @return \yii\db\ActiveQuery|\app\query\CompanyPriceHistoryQuery
+     */
+    public function getCompanyPriceHistories()
+    {
+        return $this->hasMany(CompanyPriceHistory::className(), ['company_id' => 'id']);
     }
 
     /**

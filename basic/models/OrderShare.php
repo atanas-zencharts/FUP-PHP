@@ -10,15 +10,15 @@ use Yii;
  * @property int $id
  * @property int $user_id
  * @property int $company_id
+ * @property int $status_id
  * @property float $price
  * @property int $quantity
- * @property int $quantity_initial
- * @property string $date_open
- * @property int $status_id
- * @property int|null $type 1 - Buy, 2 - Hold, 3 - Sell
+ * @property int|null $quantity_initial
+ * @property string $date_opened
  * @property string|null $date_closed
  * @property float|null $paid
  * @property float|null $profit
+ * @property int|null $type 1 - Buy, 2  - Sell
  *
  * @property Company $company
  * @property Status $status
@@ -40,10 +40,10 @@ class OrderShare extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['user_id', 'company_id', 'price', 'quantity', 'quantity_initial', 'status_id'], 'required'],
-            [['user_id', 'company_id', 'quantity', 'status_id', 'type'], 'integer'],
+            [['user_id', 'company_id', 'status_id', 'price', 'quantity'], 'required'],
+            [['user_id', 'company_id', 'status_id', 'quantity', 'quantity_initial', 'type'], 'integer'],
             [['price', 'paid', 'profit'], 'number'],
-            [['date_open', 'date_closed'], 'safe'],
+            [['date_opened', 'date_closed'], 'safe'],
             [['company_id'], 'exist', 'skipOnError' => true, 'targetClass' => Company::className(), 'targetAttribute' => ['company_id' => 'id']],
             [['status_id'], 'exist', 'skipOnError' => true, 'targetClass' => Status::className(), 'targetAttribute' => ['status_id' => 'id']],
             [['user_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['user_id' => 'id']],
@@ -59,15 +59,15 @@ class OrderShare extends \yii\db\ActiveRecord
             'id' => 'ID',
             'user_id' => 'User ID',
             'company_id' => 'Company ID',
+            'status_id' => 'Status ID',
             'price' => 'Price',
             'quantity' => 'Quantity',
             'quantity_initial' => 'Quantity Initial',
-            'date_open' => 'Date Open',
-            'status_id' => 'Status ID',
-            'type' => 'Type',
+            'date_opened' => 'Date Opened',
             'date_closed' => 'Date Closed',
             'paid' => 'Paid',
             'profit' => 'Profit',
+            'type' => 'Type',
         ];
     }
 
