@@ -12,10 +12,11 @@ use Yii;
  * @property int $company_id
  * @property float $price
  * @property int $quantity
- * @property string $date_buy
+ * @property int $quantity_initial
+ * @property string $date_open
  * @property int $status_id
  * @property int|null $type 1 - Buy, 2 - Hold, 3 - Sell
- * @property string|null $date_sell
+ * @property string|null $date_closed
  * @property float|null $paid
  * @property float|null $profit
  *
@@ -39,10 +40,10 @@ class OrderShare extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['user_id', 'company_id', 'price', 'quantity', 'status_id'], 'required'],
+            [['user_id', 'company_id', 'price', 'quantity', 'quantity_initial', 'status_id'], 'required'],
             [['user_id', 'company_id', 'quantity', 'status_id', 'type'], 'integer'],
             [['price', 'paid', 'profit'], 'number'],
-            [['date_buy', 'date_sell'], 'safe'],
+            [['date_open', 'date_closed'], 'safe'],
             [['company_id'], 'exist', 'skipOnError' => true, 'targetClass' => Company::className(), 'targetAttribute' => ['company_id' => 'id']],
             [['status_id'], 'exist', 'skipOnError' => true, 'targetClass' => Status::className(), 'targetAttribute' => ['status_id' => 'id']],
             [['user_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['user_id' => 'id']],
@@ -60,10 +61,11 @@ class OrderShare extends \yii\db\ActiveRecord
             'company_id' => 'Company ID',
             'price' => 'Price',
             'quantity' => 'Quantity',
-            'date_buy' => 'Date Buy',
+            'quantity_initial' => 'Quantity Initial',
+            'date_open' => 'Date Open',
             'status_id' => 'Status ID',
             'type' => 'Type',
-            'date_sell' => 'Date Sell',
+            'date_closed' => 'Date Closed',
             'paid' => 'Paid',
             'profit' => 'Profit',
         ];
