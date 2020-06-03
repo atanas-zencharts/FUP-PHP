@@ -96,7 +96,7 @@ class UserRestController extends Controller
             $history->history_type_id = $operationType;
             $history->user_id = $user->id;
 
-            if ($history->save()) {
+            if (!$history->save()) {
                 Yii::error(VarDumper::dumpAsString([
                      $history->getErrors()
                  ]));
