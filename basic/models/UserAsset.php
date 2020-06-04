@@ -70,6 +70,32 @@ class UserAsset extends \yii\db\ActiveRecord
         ];
     }
 
+    public function afterFind()
+    {
+        parent::afterFind();
+        $priceCurrent = $this->countPrice();
+        $this->updateAttributes(['price_for_current' => $priceCurrent]);
+    }
+
+    private function countPrice()
+    {
+        $asset = null;
+        switch ($this->asset_type) {
+            CASE 1:
+                $asset = Company::find()->asArray()->andWhere(['id' => $this->asset_id])->one();
+                break;
+            CASE 2:
+                $asset = Forex::find()->asArray()->andWhere(['id' => $this->asset_id])->one();
+                break;
+            CASE 3:
+                $asset = Cryptocurency::find()->asArray()->andWhere(['id' => $this->asset_id])->one();
+                break;
+        }
+
+        return $this->amount * $asset['price'];
+
+    }
+
     /**
      * {@inheritdoc}
      * @return \app\query\UserAssetQuery the active query used by this AR class.

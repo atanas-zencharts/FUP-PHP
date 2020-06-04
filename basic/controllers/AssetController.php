@@ -31,4 +31,10 @@ class AssetController extends Controller
         $summaryInfo['Total'] = $summaryInfo['Cash'] + $summaryInfo['Shares'] + $summaryInfo['Forex'] + $summaryInfo['Crypto'];
         return $this->asJson($summaryInfo);
     }
+
+    public function actionGetDetailedInformation($id)
+    {
+        $assets = UserAsset::find()->andWhere(['user_id' => $id])->andWhere(['<>', 'amount', 0])->asArray()->all();
+        return $this->asJson($assets);
+    }
 }
