@@ -107,4 +107,10 @@ class CompanyController extends Controller
             ->andWhere(['<>', 'user_id', $userId])->asArray()->all();
         return $this->asJson($sellOrders);
     }
+
+    public function actionGetUserOrders($id)
+    {
+        $orders = OrderShare::find()->andWhere(['<', 'status_id', 3])->andWhere(['user_id' => $id])->asArray()->all();
+        return $this->asJson($orders);
+    }
 }
