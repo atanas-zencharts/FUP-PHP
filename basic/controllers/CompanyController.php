@@ -97,16 +97,19 @@ class CompanyController extends Controller
 
     public function actionGetSellOrders($id, $userId)
     {
+
         $sellOrders = OrderShare::find()->andWhere(['type' => 2])->andWhere(['company_id' => $id])
-            ->andWhere(['<>', 'user_id', $userId])->asArray()->all();
-        return $this->asJson($sellOrders);
+            ->andWhere(['<>', 'user_id', $userId])->andWhere(['<', 'status_id', 3]);
+
+        return $this->asJson($sellOrders->asArray()->all());
     }
 
     public function actionGetBuyOrders($id, $userId)
     {
-        $sellOrders = OrderShare::find()->andWhere(['type' => 1])->andWhere(['company_id' => $id])
-            ->andWhere(['<>', 'user_id', $userId])->asArray()->all();
-        return $this->asJson($sellOrders);
+        $buyOrders = OrderShare::find()->andWhere(['type' => 1])->andWhere(['company_id' => $id])
+            ->andWhere(['<>', 'user_id', $userId])->andWhere(['<', 'status_id', 3]);
+
+        return $this->asJson($buyOrders->asArray()->all());
     }
 
     public function actionGetUserOrders($id)
