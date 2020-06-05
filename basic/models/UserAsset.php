@@ -3,6 +3,7 @@
 namespace app\models;
 
 use Yii;
+use yii\helpers\VarDumper;
 
 /**
  * This is the model class for table "user_asset".
@@ -82,29 +83,14 @@ class UserAsset extends \yii\db\ActiveRecord
         switch ($this->asset_type) {
             CASE 1:
                 $asset = Company::find()->asArray()->andWhere(['id' => $this->asset_id])->one();
-
-                Yii::error(VarDumper::dumpAsString([
-                    $asset->name,
-                    $this->amount * $asset['price']
-                 ]));
-
                 return $this->amount * $asset['price'];
                 break;
             CASE 2:
                 $asset = Forex::find()->asArray()->andWhere(['id' => $this->asset_id])->one();
-
-                Yii::error(VarDumper::dumpAsString([
-                    $asset->ticker,
-                    $this->amount * $asset['ask']
-                ]));
                 return $this->amount * $asset['ask'];
                 break;
             CASE 3:
                 $asset = Cryptocurency::find()->asArray()->andWhere(['id' => $this->asset_id])->one();
-                Yii::error(VarDumper::dumpAsString([
-                    $asset->name,
-                    $this->amount * $asset['price']
-                ]));
                 return $this->amount * $asset['price'];
                 break;
         }
