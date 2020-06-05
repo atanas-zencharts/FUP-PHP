@@ -4,9 +4,11 @@
 namespace app\controllers;
 
 use app\components\AutoBuySellHelper;
+use app\models\CompanyPriceHistory;
 use app\models\Status;
 use app\models\UserAsset;
 use Yii;
+use yii\helpers\ArrayHelper;
 use yii\helpers\VarDumper;
 use app\models\Company;
 use app\models\OrderShare;
@@ -64,7 +66,7 @@ class CompanyController extends Controller
             ->andWhere(['asset_symbol' => $company->symbol])
             ->one();
 
-        if ($asset->amount == 0) {
+        if (!isset($asset) || $asset->amount == 0) {
             return $this->asJson(['message' => "Order could not be placed, because user don't own any shares", 'error' => true]);
         }
 
@@ -151,11 +153,12 @@ class CompanyController extends Controller
             return $this->asJson(['message' => 'The order could not be updated. Please contact support', 'error' => true]);
         } else {
             $autoBuy = new AutoBuySellHelper();
-            $result = $autoBuy->autoSell($order);
+            if ($order->type == 2) {
+                $autoBuy->autoSell($order);
+            } else {
+                $autoBuy->autoBuy($order);
+            }
 
-            Yii::error(VarDumper::dumpAsString([
-                'result' => $result
-            ]));
 
             return $this->asJson(['boughtQuantity' => $autoBuy->boughtQuantity, 'totalPrice' => $autoBuy->totalPrice, 'message' => $autoBuy->message, 'error' => false]);
         }
@@ -225,5 +228,15 @@ class CompanyController extends Controller
 
             return $this->asJson(['boughtQuantity' => $autoBuy->boughtQuantity, 'totalPrice' => $autoBuy->totalPrice, 'message' => $autoBuy->message, 'error' => false]);
         }
+    }
+
+    public function actionGetPriceHistory($id)
+    {
+        $data = ArrayHelper::map(
+            CompanyPriceHistory::find()->andWhere(['company_id' => $id])->asArray()->orderBy('date ASC')->limit(7)->all(),
+            'id', 'price');
+        $dataReset = array_values($data);
+
+        return $this->asJson($dataReset);
     }
 }

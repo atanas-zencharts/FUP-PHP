@@ -186,7 +186,7 @@ class AutoBuySellHelper
     {
         $this->saleOrder = $order;
         $this->seller = $this->saleOrder->user;
-        $this->leftToSell = $this->saleOrder->quantity;
+        $this->leftToBuy = $this->saleOrder->quantity;
         $this->sellerAsset = $this->getAsset($this->seller->id, $this->saleOrder->company, $this->saleOrder);
         $this->sellerAsset->amount_sale = $this->sellerAsset->amount_sale + $this->saleOrder->quantity;
         $this->sellerAsset->save();
@@ -240,7 +240,7 @@ class AutoBuySellHelper
     {
         $amountBefore = $this->seller->wallet;
         $amount = $this->seller->wallet + $totalPrice;
-        $this->seller->updateAttributes(['wallet' => $amount]);
+        $this->seller->updateAttributes(['wallet' => round($amount, 2)]);
         $this->recordWalletHistory($this->seller->id, 4, $totalPrice, $amountBefore, $amount);
     }
 
@@ -249,9 +249,9 @@ class AutoBuySellHelper
         $history = new WalletHistory();
         $history->user_id = $userId;
         $history->history_type_id = $typeId;
-        $history->amount = $totalPrice;
-        $history->amount_before = $amountBefore;
-        $history->amount_after = $amount;
+        $history->amount = round($totalPrice, 2);
+        $history->amount_before = round($amountBefore, 2);
+        $history->amount_after = round($amount, 2);
         $history->date = (new \DateTime())->format(DATE_W3C);
 
         if (!$history->save()) {
@@ -266,16 +266,16 @@ class AutoBuySellHelper
         $this->totalPrice += $totalPrice;
         $amountBefore = $this->buyer->wallet;
         $amount = $this->buyer->wallet - $totalPrice;
-        $this->buyer->updateAttributes(['wallet' => $amount]);
+        $this->buyer->updateAttributes(['wallet' => round($amount, 2)]);
         $this->recordWalletHistory($this->buyer->id, 3, $totalPrice, $amountBefore, $amount);
 
     }
 
     private function recordSellerAsset($totalPrice, $amountSold)
     {
-        $this->sellerAsset->amount = $this->sellerAsset->amount - $amountSold;
-        $this->sellerAsset->amount_sale = $this->sellerAsset->amount_sale - $amountSold;
-        $this->sellerAsset->profit_all_time = $this->sellerAsset->profit_all_time + $totalPrice;
+        $this->sellerAsset->amount = round($this->sellerAsset->amount - $amountSold, 2);
+        $this->sellerAsset->amount_sale = round($this->sellerAsset->amount_sale - $amountSold, 2);
+        $this->sellerAsset->profit_all_time = round($this->sellerAsset->profit_all_time + $totalPrice, 2);
 
         if (!$this->sellerAsset->save()) {
             Yii::error(VarDumper::dumpAsString([
@@ -338,8 +338,8 @@ class AutoBuySellHelper
             $this->buyerAsset->paid_avg = (($this->buyerAsset->amount * $this->buyerAsset->paid_avg) + $totalPrice) / ($this->buyerAsset->amount + $amountBought);
         }
 
-        $this->buyerAsset->amount = $this->buyerAsset->amount + $amountBought;
-        $this->buyerAsset->profit_all_time = $this->buyerAsset->profit_all_time - $totalPrice;
+        $this->buyerAsset->amount = round($this->buyerAsset->amount + $amountBought, 2);
+        $this->buyerAsset->profit_all_time = round($this->buyerAsset->profit_all_time - $totalPrice, 2);
 
         if (!$this->buyerAsset->save()) {
             Yii::error(VarDumper::dumpAsString([

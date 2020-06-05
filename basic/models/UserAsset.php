@@ -40,8 +40,8 @@ class UserAsset extends \yii\db\ActiveRecord
     {
         return [
             [['user_id', 'asset_id', 'asset_name', 'asset_symbol', 'asset_type', 'asset_type_name'], 'required'],
-            [['user_id', 'asset_id', 'asset_type', 'amount', 'amount_sale', 'price_for_current', 'profit_all_time'], 'integer'],
-            [['paid_min', 'paid_avg', 'paid_max'], 'number'],
+            [['user_id', 'asset_id', 'asset_type', 'amount', 'amount_sale'], 'integer'],
+            [['paid_min', 'paid_avg', 'paid_max', 'price_for_current', 'profit_all_time'], 'number'],
             [['asset_name'], 'string', 'max' => 255],
             [['asset_symbol'], 'string', 'max' => 100],
             [['asset_type_name'], 'string', 'max' => 150],
@@ -94,7 +94,7 @@ class UserAsset extends \yii\db\ActiveRecord
                 return $this->amount * $asset['price'];
                 break;
         }
-        return null;
+        return 0;
     }
 
     /**
