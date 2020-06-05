@@ -4,6 +4,7 @@
 namespace app\controllers;
 
 use app\components\AutoBuySellHelper;
+use app\models\Status;
 use app\models\UserAsset;
 use Yii;
 use yii\helpers\VarDumper;
@@ -155,6 +156,72 @@ class CompanyController extends Controller
             Yii::error(VarDumper::dumpAsString([
                 'result' => $result
             ]));
+
+            return $this->asJson(['boughtQuantity' => $autoBuy->boughtQuantity, 'totalPrice' => $autoBuy->totalPrice, 'message' => $autoBuy->message, 'error' => false]);
+        }
+    }
+
+    public function actionManualBuy($id, $amount, $price, $userId)
+    {
+        $sellerOrder = OrderShare::findOne($id);
+        $company = Company::findOne($sellerOrder->company_id);
+        $priceFloat = floatval($price);
+
+        $buyerOrder = new OrderShare();
+        $buyerOrder->company_id = $company->id;
+        $buyerOrder->user_id = $userId;
+        $buyerOrder->type = OrderShare::TYPE_BUY;
+        $buyerOrder->status_id = Status::STATUS_OPEN;
+        $buyerOrder->quantity = $amount;
+        $buyerOrder->quantity_initial = $amount;
+        $buyerOrder->price = $priceFloat;
+        $buyerOrder->date_opened = (new \DateTime())->format(DATE_W3C);
+
+        if (!$buyerOrder->save()) {
+            Yii::error(VarDumper::dumpAsString([
+                $buyerOrder->getErrors()
+            ]));
+            return $this->asJson(['message' => 'An error occurred and the order could not be placed. Please contact support', 'error' => true]);
+        } else {
+            $autoBuy = new AutoBuySellHelper();
+            $autoBuy->setSaleOrder($sellerOrder);
+            $autoBuy->setSeller($sellerOrder->user);
+            $autoBuy->setBuyerOrder($buyerOrder);
+            $autoBuy->setBuyer($buyerOrder->user);
+            $autoBuy->manualBuy();
+
+            return $this->asJson(['boughtQuantity' => $autoBuy->boughtQuantity, 'totalPrice' => $autoBuy->totalPrice, 'message' => $autoBuy->message, 'error' => false]);
+        }
+    }
+
+    public function actionManualSell($id, $amount, $price, $userId)
+    {
+        $buyerOrder = OrderShare::findOne($id);
+        $company = Company::findOne($buyerOrder->company_id);
+        $priceFloat = floatval($price);
+
+        $sellerOrder = new OrderShare();
+        $sellerOrder->company_id = $company->id;
+        $sellerOrder->user_id = $userId;
+        $sellerOrder->type = OrderShare::TYPE_SELL;
+        $sellerOrder->status_id = Status::STATUS_OPEN;
+        $sellerOrder->quantity = $amount;
+        $sellerOrder->quantity_initial = $amount;
+        $sellerOrder->price = $priceFloat;
+        $sellerOrder->date_opened = (new \DateTime())->format(DATE_W3C);
+
+        if (!$sellerOrder->save()) {
+            Yii::error(VarDumper::dumpAsString([
+                 $sellerOrder->getErrors()
+             ]));
+            return $this->asJson(['message' => 'An error occurred and the order could not be placed. Please contact support', 'error' => true]);
+        } else {
+            $autoBuy = new AutoBuySellHelper();
+            $autoBuy->setSaleOrder($sellerOrder);
+            $autoBuy->setSeller($sellerOrder->user);
+            $autoBuy->setBuyerOrder($buyerOrder);
+            $autoBuy->setBuyer($buyerOrder->user);
+            $autoBuy->manualBuy();
 
             return $this->asJson(['boughtQuantity' => $autoBuy->boughtQuantity, 'totalPrice' => $autoBuy->totalPrice, 'message' => $autoBuy->message, 'error' => false]);
         }

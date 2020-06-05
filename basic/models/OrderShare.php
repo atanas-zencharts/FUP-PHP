@@ -26,6 +26,9 @@ use Yii;
  */
 class OrderShare extends \yii\db\ActiveRecord
 {
+    const TYPE_BUY = 1;
+    const TYPE_SELL = 2;
+
     /**
      * {@inheritdoc}
      */

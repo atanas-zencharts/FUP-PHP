@@ -4,6 +4,7 @@
 namespace app\components;
 
 use app\models\Company;
+use app\models\Status;
 use app\models\UserAsset;
 use Yii;
 use yii\helpers\VarDumper;
@@ -38,6 +39,84 @@ class AutoBuySellHelper
     private int $canSell;
     private int $leftToBuy;
     private int $leftToSell;
+
+    /**
+     * @return OrderShare
+     */
+    public function getBuyerOrder(): OrderShare
+    {
+        return $this->buyerOrder;
+    }
+
+    /**
+     * @param OrderShare $buyerOrder
+     */
+    public function setBuyerOrder(OrderShare $buyerOrder): void
+    {
+        $this->buyerOrder = $buyerOrder;
+    }
+
+    /**
+     * @return OrderShare
+     */
+    public function getSaleOrder(): OrderShare
+    {
+        return $this->saleOrder;
+    }
+
+    /**
+     * @param OrderShare $saleOrder
+     */
+    public function setSaleOrder(OrderShare $saleOrder): void
+    {
+        $this->saleOrder = $saleOrder;
+    }
+
+    /**
+     * @return User
+     */
+    public function getBuyer(): User
+    {
+        return $this->buyer;
+    }
+
+    /**
+     * @param User $buyer
+     */
+    public function setBuyer(User $buyer): void
+    {
+        $this->buyer = $buyer;
+    }
+
+    /**
+     * @return User
+     */
+    public function getSeller(): User
+    {
+        return $this->seller;
+    }
+
+    /**
+     * @param User $seller
+     */
+    public function setSeller(User $seller): void
+    {
+        $this->seller = $seller;
+    }
+
+    public function manualBuy()
+    {
+        $this->sellerAsset = $this->getAsset($this->seller->id, $this->saleOrder->company, $this->saleOrder);
+        $this->buyerAsset = $this->getAsset($this->buyer->id, $this->buyerOrder->company, $this->buyerOrder);
+        $this->checkWallet();
+        $this->doOperation();
+
+        if ($this->buyerOrder->quantity == 0) {
+            $this->message = 'Order was placed and successfully executed. The full quantity was purchased';
+        } elseif ($this->buyerOrder->quantity > 0) {
+            $this->message = 'Order was placed and partially executed. The quantity purchased is ' . $this->boughtQuantity . ' out of ' .$this->buyerOrder->quantity_initial;
+        }
+    }
 
     public function autoBuy($order)
     {
@@ -89,6 +168,20 @@ class AutoBuySellHelper
         }
     }
 
+    public function manualSell()
+    {
+        $this->buyerAsset = $this->getAsset($this->buyer->id, $this->buyerOrder->company, $this->buyerOrder);
+        $this->sellerAsset = $this->getAsset($this->seller->id, $this->saleOrder->company, $this->saleOrder);
+        $this->checkWallet();
+        $this->doOperation();
+
+        if ($this->buyerOrder->quantity == 0) {
+            $this->message = 'Order was placed and successfully executed. The full quantity was sell';
+        } elseif ($this->buyerOrder->quantity > 0) {
+            $this->message = 'Order was placed and partially executed. The quantity sell is ' . $this->boughtQuantity . ' out of ' .$this->saleOrder->quantity_initial;
+        }
+    }
+
     public function autoSell($order)
     {
         $this->saleOrder = $order;
@@ -121,9 +214,9 @@ class AutoBuySellHelper
         }
 
         if ($this->buyerOrder->quantity == 0) {
-            $this->message = 'Order was placed and successfully executed. The full quantity was purchased';
+            $this->message = 'Order was placed and successfully executed. The full quantity was sell';
         } elseif ($this->buyerOrder->quantity > 0) {
-            $this->message = 'Order was placed and partially executed. The quantity purchased is ' . $this->boughtQuantity . ' out of ' .$this->buyerOrder->quantity_initial;
+            $this->message = 'Order was placed and partially executed. The quantity sell is ' . $this->boughtQuantity . ' out of ' .$this->buyerOrder->quantity_initial;
         }
         return true;
     }
@@ -286,8 +379,8 @@ class AutoBuySellHelper
     {
         $totalPrice = $this->saleOrder->quantity * $this->saleOrder->price;
         $this->totalPrice += $totalPrice;
-        $this->saleOrder->quantity = 0;
-        $this->saleOrder->status_id = 3;
+        $this->saleOrder->quantity = $this->saleOrder->quantity - $this->canBuy;
+        $this->saleOrder->status_id = Status::STATUS_CLOSED;
         $this->saleOrder->profit = $this->saleOrder->profit + $totalPrice;
         if ($this->saleOrder->save()) {
             $this->recordSellerWallet($totalPrice);
@@ -298,7 +391,7 @@ class AutoBuySellHelper
         }
 
         $this->buyerOrder->quantity = $this->buyerOrder->quantity - $this->saleOrder->quantity;
-        $this->buyerOrder->status_id = 2;
+        $this->buyerOrder->status_id = Status::STATUS_PROGRESS;
         $this->buyerOrder->paid = $totalPrice;
 
         if (!$this->buyerOrder->save()) {
@@ -311,8 +404,8 @@ class AutoBuySellHelper
     private function sellerEqualToBuyer()
     {
         $totalPrice = $this->saleOrder->quantity * $this->saleOrder->price;
-        $this->saleOrder->quantity = 0;
-        $this->saleOrder->status_id = 3;
+        $this->saleOrder->quantity = $this->saleOrder->quantity - $this->canBuy;
+        $this->saleOrder->status_id = ($this->saleOrder->quantity == 0 ? Status::STATUS_CLOSED : Status::STATUS_PROGRESS);
         $this->saleOrder->profit = $this->saleOrder->profit + $totalPrice;
         if ($this->saleOrder->save()) {
             $this->recordSellerWallet($totalPrice);
@@ -320,21 +413,23 @@ class AutoBuySellHelper
             $this->recordSellerAsset($totalPrice, $this->canBuy);
             $this->recordBuyerAsset($totalPrice, $this->canBuy);
             $this->leftToBuy = 0;
+
+            $this->buyerOrder->quantity = $this->buyerOrder->quantity - $this->canBuy;
+            $this->buyerOrder->status_id = ($this->buyerOrder->quantity == 0 ? Status::STATUS_CLOSED : Status::STATUS_PROGRESS);
+            $this->buyerOrder->paid = $totalPrice;
+
+            if (!$this->buyerOrder->save()) {
+                Yii::error(VarDumper::dumpAsString([
+                    $this->buyerOrder->getErrors()
+                ]));
+            }
         } else {
             Yii::error(VarDumper::dumpAsString([
                 $this->saleOrder->getErrors()
             ]));
         }
 
-        $this->buyerOrder->quantity = 0;
-        $this->buyerOrder->status_id = 3;
-        $this->buyerOrder->paid = $totalPrice;
 
-        if (!$this->buyerOrder->save()) {
-            Yii::error(VarDumper::dumpAsString([
-                $this->buyerOrder->getErrors()
-             ]));
-        }
     }
 
     private function getOrdersQuery($typeId, $order, $wallet)

@@ -16,6 +16,10 @@ use Yii;
  */
 class Status extends \yii\db\ActiveRecord
 {
+    const STATUS_OPEN = 1;
+    const STATUS_PROGRESS =2;
+    const STATUS_CLOSED = 3;
+
     /**
      * {@inheritdoc}
      */
