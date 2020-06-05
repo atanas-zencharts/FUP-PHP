@@ -22,6 +22,8 @@ use Yii;
  */
 class Forex extends \yii\db\ActiveRecord
 {
+    public float $price;
+
     /**
      * {@inheritdoc}
      */

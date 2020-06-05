@@ -13,11 +13,12 @@ use Yii;
  * @property int $status_id
  * @property float $price
  * @property int $quantity
- * @property string $date_buy
- * @property string|null $date_sell
+ * @property int|null $quantity_initial
+ * @property string $date_opened
+ * @property string|null $date_closed
  * @property float|null $paid
  * @property float|null $profit
- * @property int|null $type 1 - Buy, 2 - Hold, 3 - Sell
+ * @property int|null $type 1 - Buy, 2 - Sell
  *
  * @property Forex $forex
  * @property Status $status
@@ -40,9 +41,9 @@ class OrderForex extends \yii\db\ActiveRecord
     {
         return [
             [['user_id', 'forex_id', 'status_id', 'price', 'quantity'], 'required'],
-            [['user_id', 'forex_id', 'status_id', 'quantity', 'type'], 'integer'],
+            [['user_id', 'forex_id', 'status_id', 'quantity', 'quantity_initial', 'type'], 'integer'],
             [['price', 'paid', 'profit'], 'number'],
-            [['date_buy', 'date_sell'], 'safe'],
+            [['date_opened', 'date_closed'], 'safe'],
             [['forex_id'], 'exist', 'skipOnError' => true, 'targetClass' => Forex::className(), 'targetAttribute' => ['forex_id' => 'id']],
             [['status_id'], 'exist', 'skipOnError' => true, 'targetClass' => Status::className(), 'targetAttribute' => ['status_id' => 'id']],
             [['user_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['user_id' => 'id']],
@@ -61,8 +62,9 @@ class OrderForex extends \yii\db\ActiveRecord
             'status_id' => 'Status ID',
             'price' => 'Price',
             'quantity' => 'Quantity',
-            'date_buy' => 'Date Buy',
-            'date_sell' => 'Date Sell',
+            'quantity_initial' => 'Quantity Initial',
+            'date_opened' => 'Date Opened',
+            'date_closed' => 'Date Closed',
             'paid' => 'Paid',
             'profit' => 'Profit',
             'type' => 'Type',

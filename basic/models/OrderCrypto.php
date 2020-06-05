@@ -10,14 +10,15 @@ use Yii;
  * @property int $id
  * @property int $user_id
  * @property int $crypto_id
+ * @property int $status_id
  * @property float $price
  * @property int $quantity
- * @property string $date_buy
- * @property int $status_id
- * @property int $type 1 - Buy, 2 - Hold, 3 - Sell
- * @property string|null $date_sell
+ * @property int|null $quantity_initial
+ * @property string $date_opened
+ * @property string|null $date_closed
  * @property float|null $paid
  * @property float|null $profit
+ * @property int $type 1 - Buy, 2 - Sell
  *
  * @property Cryptocurency $crypto
  * @property Status $status
@@ -39,10 +40,10 @@ class OrderCrypto extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['user_id', 'crypto_id', 'price', 'quantity', 'status_id', 'type'], 'required'],
-            [['user_id', 'crypto_id', 'quantity', 'status_id', 'type'], 'integer'],
+            [['user_id', 'crypto_id', 'status_id', 'price', 'quantity', 'type'], 'required'],
+            [['user_id', 'crypto_id', 'status_id', 'quantity', 'quantity_initial', 'type'], 'integer'],
             [['price', 'paid', 'profit'], 'number'],
-            [['date_buy', 'date_sell'], 'safe'],
+            [['date_opened', 'date_closed'], 'safe'],
             [['crypto_id'], 'exist', 'skipOnError' => true, 'targetClass' => Cryptocurency::className(), 'targetAttribute' => ['crypto_id' => 'id']],
             [['status_id'], 'exist', 'skipOnError' => true, 'targetClass' => Status::className(), 'targetAttribute' => ['status_id' => 'id']],
             [['user_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['user_id' => 'id']],
@@ -58,14 +59,15 @@ class OrderCrypto extends \yii\db\ActiveRecord
             'id' => 'ID',
             'user_id' => 'User ID',
             'crypto_id' => 'Crypto ID',
+            'status_id' => 'Status ID',
             'price' => 'Price',
             'quantity' => 'Quantity',
-            'date_buy' => 'Date Buy',
-            'status_id' => 'Status ID',
-            'type' => 'Type',
-            'date_sell' => 'Date Sell',
+            'quantity_initial' => 'Quantity Initial',
+            'date_opened' => 'Date Opened',
+            'date_closed' => 'Date Closed',
             'paid' => 'Paid',
             'profit' => 'Profit',
+            'type' => 'Type',
         ];
     }
 
